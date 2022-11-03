@@ -1,0 +1,45 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Aug 29 18:43:14 2018
+
+@author: eoneil
+"""
+
+
+from sklearn import cross_validation
+import pandas as pd
+
+df_new=pd.read_csv('/Users/ed/Google Drive/CSDA_1050/Data/DataCollaspedbyGenericPerDoctor.csv')
+df_new1=df_new.dropna(subset=['key'])
+df_new1['WVRSTATE'].isnull().sum()
+df_new2=df_new1.drop(['DrugName','npi.1','generic_name.1','REINDATE','WAIVERDATE','WVRSTATE', 'BUSNAME',
+                      'ADDRESS','key','DOB','EXCLDATE','EXCLTYPE','GENERAL','ZIP','description_flag'],axis='columns')
+from sklearn.tree import DecisionTreeClassifier
+
+encoded_df=df_new2
+cat_cols = encoded_df.select_dtypes(['object'])
+label_mapping = {}
+for c in cat_cols:
+    encoded_df[c], label_mapping[c] = pd.factorize(encoded_df[c])
+inputvar=encoded_df.drop(['good','npi'], axis=1)
+inputvar.head()
+targetvar=encoded_df['good']
+targetvar.head()
+
+X_train, X_test, y_train, y_test = cross_validation.train_test_split(inputvar, targetvar, test_size=0.3)
+
+dtree=DecisionTreeClassifier()
+dtree.fit(X_train,y_train)
+
+
+from sklearn.externals.six import StringIO  
+from IPython.display import Image  
+from sklearn.tree import export_graphviz
+import pydotplus
+dot_data = StringIO()
+export_graphviz(dtree, out_file=dot_data,  
+                filled=True, rounded=True,
+                special_characters=True)
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+Image(graph.create_png())

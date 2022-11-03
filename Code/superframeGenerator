@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Aug 24 13:09:44 2018
+
+@author: eoneil
+"""
+
+#combine good and bad with labels and year labels across all years
+#sum perscriptions counts based on total claims
+#feed doctors into decision tree
+import pandas as pd
+#make empty dataframe populated with real data
+fname='/Users/ed/Google Drive/CSDA_1050/Data/PartDPrescriber/PartD_Prescriber_PUF_NPI_Drug_13_goodpeoplemerge.txt'
+partDd=pd.read_csv(fname, sep=',')
+colnm=list(partDd)
+colnm.append("good")
+colnm.append("infoYear")
+
+superframe=pd.DataFrame(columns=colnm)
+
+for x in range(13,17):
+    #generate file names
+    fname4='/Users/ed/Google Drive/CSDA_1050/Data/PartDPrescriber/PartD_Prescriber_PUF_NPI_Drug_'+str(x)+'_goodpeoplemerge.txt'
+    fname3='/Users/ed/Google Drive/CSDA_1050/Data/PartDPrescriber/PartD_Prescriber_PUF_NPI_Drug_'+str(x)+'_badpeoplemerge.txt'
+
+    #load data
+    partDBad=pd.read_csv(fname3, sep=',')
+    partDGood=pd.read_csv(fname4, sep=',')
+    
+    partDBad["good"]=0
+    partDGood["good"]=1
+    
+    partDBad["infoYear"]=x
+    partDGood["infoYear"]=x
+    
+    frames = [partDBad,partDGood]
+
+    result = pd.concat(frames)
+    
+    #result.groupby(['key', 'generic_name'])['total_claim_count'].agg('sum')
+    frames = [superframe,result]
+
+    superframe=pd.concat(frames)
+
+superframe.to_csv('superframe.csv')
